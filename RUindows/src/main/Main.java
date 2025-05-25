@@ -204,30 +204,6 @@ public class Main extends Application {
 		return box;
 	}
 
-	private void openPhotoEditor(String imageTitle, String imagePath) {
-		// Detect if imagePath is a resource path (starts with /assets/) or a file path
-		// on disk
-		if (imagePath.startsWith("/assets/")) {
-			Image image = new Image(getClass().getResourceAsStream(imagePath));
-			PhotoEditor photoEditor = new PhotoEditor(imageTitle, image);
-			photoEditor.show();
-		} else {
-			// Treat as file path on local disk
-			File file = new File(imagePath);
-			if (!file.exists()) {
-				showAlert(Alert.AlertType.ERROR, "Image file not found: " + imagePath);
-				return;
-			}
-			try {
-				Image image = new Image(file.toURI().toString());
-				PhotoEditor photoEditor = new PhotoEditor(imageTitle, image);
-				photoEditor.show();
-			} catch (Exception e) {
-				showAlert(Alert.AlertType.ERROR, "Failed to open image: " + e.getMessage());
-			}
-		}
-	}
-
 	private void notepadWindow() {
 		Stage notepadStage = new Stage();
 		notepadStage.setTitle("Notepad");
@@ -526,7 +502,7 @@ public class Main extends Application {
 
 						final String finalFilename = filename;
 						VBox shortcut = createDesktopIcon("/assets/" + imageName, filename, () -> {
-							openPhotoEditor(imageName, videoPath);
+							openPhotoEditor(imageName, tempFile.getAbsolutePath());
 						});
 						iconBox.getChildren().add(shortcut);
 						showAlert(Alert.AlertType.INFORMATION, "Downloaded " + filename);
@@ -592,19 +568,35 @@ public class Main extends Application {
 		chromeStage.show();
 	}
 
-	public class PhotoEditor {
+	private void openPhotoEditor(String imageTitle, String imagePath) {
+		Image image;
+		if (imagePath.startsWith("/assets/")) {
+			image = new Image(getClass().getResourceAsStream(imagePath));
+		} else {
+			File file = new File(imagePath);
+			if (!file.exists()) {
+				showAlert(Alert.AlertType.ERROR, "Image file not found: " + imagePath);
+				return;
+			}
+			image = new Image(file.toURI().toString());
+		}
+		PhotoEditor photoEditor = new PhotoEditor(this, imageTitle, image);
+		photoEditor.show();
+	}
 
-		private final Stage stage;
+	// PhotoEditor class as an inner class
+	public class PhotoEditor extends Stage {
 		private final ImageView imageView;
 		private double currentRotation = 0;
 
-		public PhotoEditor(String imageTitle, Image image) {
-			stage = new Stage();
-			stage.setTitle(imageTitle);
+		public PhotoEditor(Main main, String imageTitle, Image image) {
+			setTitle(imageTitle);
 
 			// ImageView for the image
 			imageView = new ImageView(image);
 			imageView.setPreserveRatio(true);
+			imageView.setFitWidth(600); // Set a default width
+			imageView.setFitHeight(500); // Set a default height
 
 			// ScrollPane to enable scrolling if zoomed in beyond window size
 			ScrollPane scrollPane = new ScrollPane(imageView);
@@ -613,11 +605,13 @@ public class Main extends Application {
 			scrollPane.setFitToHeight(true);
 
 			// Zoom slider from 0.5x to 3x zoom, default 1x
+			Label zoomLabel = new Label("Zoom:");
 			Slider zoomSlider = new Slider(0.5, 3.0, 1.0);
 			zoomSlider.setShowTickLabels(true);
 			zoomSlider.setShowTickMarks(true);
 			zoomSlider.setMajorTickUnit(0.5);
 			zoomSlider.setBlockIncrement(0.1);
+			zoomSlider.setPrefWidth(150);
 
 			zoomSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
 				double scale = newVal.doubleValue();
@@ -625,35 +619,28 @@ public class Main extends Application {
 				imageView.setScaleY(scale);
 			});
 
-			// MenuBar with Zoom and Rotate menus
-			MenuBar menuBar = new MenuBar();
+			// HBox for zoom controls
+			HBox zoomBox = new HBox(5, zoomLabel, zoomSlider);
+			zoomBox.setAlignment(Pos.CENTER_LEFT);
 
-			Menu zoomMenu = new Menu("Zoom");
-			CustomMenuItem zoomItem = new CustomMenuItem(zoomSlider);
-			zoomItem.setHideOnClick(false);
-			zoomMenu.getItems().add(zoomItem);
-
-			Menu rotateMenu = new Menu("Rotate");
-			MenuItem rotateItem = new MenuItem("Rotate 90°");
-			rotateItem.setOnAction(e -> {
+			Button rotateButton = new Button("Rotate");
+			rotateButton.setOnAction(e -> {
 				currentRotation = (currentRotation + 90) % 360;
 				imageView.setRotate(currentRotation);
 			});
-			rotateMenu.getItems().add(rotateItem);
 
-			menuBar.getMenus().addAll(zoomMenu, rotateMenu);
+			// Place zoomBox and Button in an HBox
+			HBox topBar = new HBox(10, zoomBox, rotateButton);
+			topBar.setPadding(new Insets(5));
+			topBar.setAlignment(Pos.CENTER_LEFT);
 
 			// Layout
 			BorderPane root = new BorderPane();
-			root.setTop(menuBar);
+			root.setTop(topBar);
 			root.setCenter(scrollPane);
 
 			Scene scene = new Scene(root, 600, 500);
-			stage.setScene(scene);
-		}
-
-		public void show() {
-			stage.show();
+			setScene(scene);
 		}
 	}
 

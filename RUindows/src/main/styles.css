@@ -1,11 +1,66 @@
 .menu {
-    -fx-background-color: black;
+  /*   -fx-background-color: black; */
 }
 
 .menu-bar .menu .label {
-    -fx-text-fill: white;
+  -fx-text-fill: black;
 }
 
 .menu-bar .menu:hover {
-    -fx-background-color: #333333;
+  -fx-background-color: #333333;
+}
+.error-label {
+  -fx-text-fill: red;
+  -fx-font-weight: bold;
+}
+.welcome-label {
+  -fx-font-size: 24px;
+  -fx-text-fill: white;
+  -fx-font-weight: bold;
+}
+.taskBar {
+  -fx-background-color: black;
+}
+.searchbar {
+  -fx-border-color: deepskyblue;
+  -fx-border-radius: 4px;
+  -fx-focus-color: deepskyblue;
+}
+.emptyContent {
+  -fx-font-size: 18px;
+  -fx-text-fill: gray;
+}
+.notfoundtitle {
+  -fx-font-size: 28px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #333333;
+}
+.not-found-desc {
+  -fx-font-size: 16px;
+  -fx-text-fill: #666666;
+}
+.rutubecontent {
+  -fx-background-color: #2b2b2b;
+}
+.logolabel {
+  -fx-font-size: 22px;
+  -fx-text-fill: white;
+  -fx-font-weight: bold;
+}
+.rutifycontent {
+  -fx-background-color: black;
+}
+.rutifytitle {
+  -fx-font-size: 24px;
+  -fx-text-fill: white;
+  -fx-font-weight: bold;
+}
+.stockscroll {
+  -fx-background: white;
+}
+.stockimage {
+  -fx-background-color: black;
+}
+.mainlayout {
+  -fx-background-color: #f5f5f5;
 }
