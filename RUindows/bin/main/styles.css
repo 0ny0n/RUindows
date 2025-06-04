@@ -1,66 +1,204 @@
-.menu {
-  /*   -fx-background-color: black; */
+/* Taskbar styling - stronger selectors */
+.taskbar {
+  -fx-background-color: black !important;
 }
 
-.menu-bar .menu .label {
+.taskbar > .container {
+  -fx-background-color: black !important;
+}
+
+.taskbar .menu-bar {
+  -fx-background-color: black !important;
+}
+
+/* Taskbar menu buttons (the actual menu buttons on taskbar) */
+.taskbar .menu {
+  -fx-background-color: transparent !important;
+}
+
+.taskbar .menu .label {
+  -fx-text-fill: white !important;
+}
+
+.taskbar .menu:hover {
+  -fx-background-color: #333333 !important;
+}
+
+.taskbar .menu:showing {
+  -fx-background-color: #333333 !important;
+}
+
+/* Taskbar dropdown menus (logout/shutdown menu items) */
+.taskbar .menu .context-menu {
+  -fx-background-color: white !important;
+  -fx-border-color: #cccccc !important;
+}
+
+.taskbar .menu .context-menu .menu-item {
+  -fx-background-color: transparent !important;
+}
+
+.taskbar .menu .context-menu .menu-item .label {
+  -fx-text-fill: black !important;
+}
+
+.taskbar .menu .context-menu .menu-item:hover {
+  -fx-background-color: #e0e0e0 !important;
+}
+
+.taskbar .menu .context-menu .menu-item:focused {
+  -fx-background-color: #e0e0e0 !important;
+}
+
+/* Regular application menu bars (like notepad) - NOT taskbar */
+.menu-bar:not(.taskbar) {
+  -fx-background-color: #f0f0f0;
+}
+
+.menu-bar:not(.taskbar) .menu .label {
   -fx-text-fill: black;
 }
 
-.menu-bar .menu:hover {
-  -fx-background-color: #333333;
+.menu-bar:not(.taskbar) .menu:hover {
+  -fx-background-color: #e0e0e0;
 }
+
+.menu-bar:not(.taskbar) .menu:showing {
+  -fx-background-color: #d0d0d0;
+}
+
+/* Application menu dropdowns (like notepad File menu) - black background with white text */
+.menu-bar:not(.taskbar) .menu .context-menu {
+  -fx-background-color: black !important;
+  -fx-border-color: #555555 !important;
+  -fx-border-width: 1px;
+}
+
+.menu-bar:not(.taskbar) .menu .context-menu .menu-item {
+  -fx-background-color: black !important;
+  -fx-text-fill: white !important;
+  -fx-padding: 5px 10px;
+}
+
+.menu-bar:not(.taskbar) .menu .context-menu .menu-item:hover {
+  -fx-background-color: #666666 !important;
+  -fx-text-fill: white !important;
+}
+
+.menu-bar:not(.taskbar) .menu .context-menu .menu-item:focused {
+  -fx-background-color: #666666 !important;
+  -fx-text-fill: white !important;
+}
+
+.menu-bar:not(.taskbar) .menu .context-menu .menu-item .label {
+  -fx-text-fill: white !important;
+}
+
+/* Login page styling */
 .error-label {
   -fx-text-fill: red;
   -fx-font-weight: bold;
 }
+
 .welcome-label {
   -fx-font-size: 24px;
   -fx-text-fill: white;
   -fx-font-weight: bold;
 }
-.taskBar {
-  -fx-background-color: black;
+
+/* Desktop icons styling */
+.desktop-icons {
+  -fx-background-color: transparent;
 }
+
+.desktop-icon {
+  -fx-background-color: transparent;
+  -fx-border-color: transparent;
+  -fx-padding: 5;
+}
+
+.desktop-icon:hover {
+  -fx-background-color: rgba(255, 255, 255, 0.2);
+  -fx-background-radius: 5;
+}
+
+.desktop-icon-label {
+  -fx-text-fill: white;
+  -fx-font-weight: bold;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 2, 0, 0, 1);
+}
+
+/* Chrome browser styling */
 .searchbar {
   -fx-border-color: deepskyblue;
   -fx-border-radius: 4px;
   -fx-focus-color: deepskyblue;
 }
-.emptyContent {
+
+.empty-content {
   -fx-font-size: 18px;
   -fx-text-fill: gray;
 }
-.notfoundtitle {
+
+.notfound-title {
   -fx-font-size: 28px;
   -fx-font-weight: bold;
   -fx-text-fill: #333333;
 }
-.not-found-desc {
+
+.notfound-desc {
   -fx-font-size: 16px;
   -fx-text-fill: #666666;
 }
-.rutubecontent {
+
+.rutube-content {
   -fx-background-color: #2b2b2b;
 }
-.logolabel {
+
+.logo-label {
   -fx-font-size: 22px;
   -fx-text-fill: white;
   -fx-font-weight: bold;
 }
-.rutifycontent {
+
+.rutify-content {
   -fx-background-color: black;
 }
-.rutifytitle {
+
+.rutify-title {
   -fx-font-size: 24px;
   -fx-text-fill: white;
   -fx-font-weight: bold;
 }
-.stockscroll {
-  -fx-background: white;
+
+/* Stock images styling - change background to black */
+.stock-scroll {
+  -fx-background: black;
 }
-.stockimage {
+
+.stock-images {
   -fx-background-color: black;
 }
-.mainlayout {
+
+/* Stock images text and content styling */
+.stock-images .label {
+  -fx-text-fill: white;
+}
+
+/* Download button styling for stock images */
+.download-button {
+  -fx-text-fill: black;
+}
+
+.main-layout {
   -fx-background-color: #f5f5f5;
+}
+
+/* Force taskbar to be black - ultimate override */
+MenuBar.taskbar {
+  -fx-background-color: black !important;
+}
+
+MenuBar.taskbar > * {
+  -fx-background-color: black !important;
 }

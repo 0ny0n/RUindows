@@ -13,6 +13,7 @@ import java.util.Set;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -35,16 +36,21 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 
 public class Main extends Application {
 
-	private VBox iconBox = new VBox(25);
+	// Use TilePane with vertical orientation for desktop icons
+	private TilePane iconBox = new TilePane(Orientation.VERTICAL);
 	private int textFileCount = 0;
 	private Set<String> savedFileNames = new HashSet<>();
 
@@ -62,7 +68,6 @@ public class Main extends Application {
 	}
 
 	public Scene LoginPage(Stage stage) {
-
 		Image img = new Image(getClass().getResourceAsStream("/assets/nature.jpg"));
 		ImageView imgBackground = new ImageView(img);
 		imgBackground.setPreserveRatio(false);
@@ -80,16 +85,19 @@ public class Main extends Application {
 		profilePicture.setPreserveRatio(true);
 
 		Label errorMsg = new Label();
-		errorMsg.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+		errorMsg.getStyleClass().add("error-label");
+
 		Label welcomeLabel = new Label("Welcome RU24-2!");
-		welcomeLabel.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;");
+		welcomeLabel.getStyleClass().add("welcome-label");
+
 		PasswordField pwField = new PasswordField();
 		pwField.setPromptText("Enter password");
 		pwField.setMaxWidth(400);
+
 		Button loginBtn = new Button("Login");
 
 		loginBtn.setOnAction(e -> {
-			if (pwField.getText().equals("Hello")) {
+			if (pwField.getText().equals("admin")) {
 				stage.setScene(HomePage(stage));
 			} else {
 				errorMsg.setText("Wrong Password!");
@@ -111,6 +119,7 @@ public class Main extends Application {
 	public Scene HomePage(Stage homeStage) {
 		iconBox.getChildren().clear();
 		savedFileNames.clear();
+
 		// Load background image
 		Image homeImg = new Image(getClass().getResourceAsStream("/assets/homepage.jpg"));
 		ImageView homeBackground = new ImageView(homeImg);
@@ -123,10 +132,17 @@ public class Main extends Application {
 		homeBackground.fitWidthProperty().bind(backgroundPane.widthProperty());
 		homeBackground.fitHeightProperty().bind(backgroundPane.heightProperty());
 
-		iconBox.setPadding(new Insets(30, 0, 0, 30));
+		// Configure TilePane for desktop icons
+		iconBox.setPadding(new Insets(20, 0, 0, 20));
 		iconBox.setAlignment(Pos.TOP_LEFT);
+		iconBox.setPrefColumns(1); // Start with 1 column
+		iconBox.setMaxWidth(1200); // Set max width to allow multiple columns
+		iconBox.setMaxHeight(600); // Set max height to prevent icons from going below taskbar
+		iconBox.setHgap(20); // Horizontal gap between columns
+		iconBox.setVgap(20); // Vertical gap between icons in a column
+		iconBox.getStyleClass().add("desktop-icons");
+
 		// VBox containing all icons + labels
-		// Wajib pake VBox untuk setiap icon + label biar spacingnya bagus.
 		VBox trashBox = createDesktopIcon("/assets/trash-icon.png", "Trash bin", null);
 		VBox notepadBox = createDesktopIcon("/assets/notepad-icon.png", "Notepad", this::notepadWindow);
 		VBox chromeBox = createDesktopIcon("/assets/chrome.png", "Chrome", this::chromeWindow);
@@ -149,28 +165,39 @@ public class Main extends Application {
 		shutdownLogo.setFitWidth(40);
 		shutdownLogo.setFitHeight(40);
 
+		// Remove all inline styling - use only CSS classes
 		MenuItem logoutMenu = new MenuItem("Logout");
 		logoutMenu.setGraphic(logoutLogo);
 		logoutMenu.setOnAction(e -> homeStage.setScene(LoginPage(homeStage)));
+		logoutMenu.getStyleClass().add("taskbar-menu-item");
 
 		MenuItem shutdownMenu = new MenuItem("Shutdown");
 		shutdownMenu.setGraphic(shutdownLogo);
 		shutdownMenu.setOnAction(e -> homeStage.close());
+		shutdownMenu.getStyleClass().add("taskbar-menu-item");
 
 		Menu startMenu = new Menu();
 		startMenu.getItems().addAll(logoutMenu, shutdownMenu);
 		startMenu.setGraphic(windowsLogo);
+		startMenu.getStyleClass().add("taskbar-menu");
 
 		MenuItem openNotepadItem = new MenuItem("Open Notepad");
 		openNotepadItem.setOnAction(e -> notepadWindow());
+		openNotepadItem.getStyleClass().add("taskbar-menu-item");
 
 		Menu notepadMenu = new Menu("");
 		notepadMenu.setGraphic(notepadLogo);
 		notepadMenu.getItems().add(openNotepadItem);
+		notepadMenu.getStyleClass().add("taskbar-menu");
 
-		// Taskbar
+		// Taskbar - remove inline styling
 		MenuBar taskBar = new MenuBar(startMenu, notepadMenu);
-		taskBar.setStyle("-fx-background-color: black;");
+		taskBar.getStyleClass().add("taskbar");
+
+		// Force taskbar to be black with inline styling as backup
+		taskBar.setStyle("-fx-background-color: black; -fx-border-color: black;"); // paksa pake inline karena external
+																					// css ga kerja T.T
+		taskBar.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
 
 		// Foreground layout over background (BorderPane)
 		BorderPane foregroundPane = new BorderPane();
@@ -191,9 +218,14 @@ public class Main extends Application {
 		icon.setPreserveRatio(true);
 
 		Label label = new Label(labelText);
+		label.getStyleClass().add("desktop-icon-label");
+
 		VBox box = new VBox(5);
 		box.setAlignment(Pos.CENTER);
 		box.getChildren().addAll(icon, label);
+		box.setPrefWidth(100); // Set preferred width for consistent icon spacing
+		box.setPrefHeight(100); // Set preferred height for consistent icon spacing
+		box.getStyleClass().add("desktop-icon");
 
 		box.setOnMouseClicked(e -> {
 			if (onClick != null)
@@ -211,57 +243,118 @@ public class Main extends Application {
 		TextArea textArea = new TextArea();
 		textArea.setWrapText(true);
 
+		// Track current file info for new documents
+		final String[] currentFilePath = { null };
+		final String[] currentFileName = { null };
+
+		// Save menu item
 		MenuItem saveMenu = new MenuItem("Save");
 		saveMenu.setOnAction(e -> {
-			String defaultName = (textFileCount == 0) ? "text.txt" : "text" + textFileCount + ".txt";
-			TextInputDialog dialog = new TextInputDialog(defaultName);
-			dialog.setTitle("Save File");
-			dialog.setHeaderText("Enter file name (alphanumeric only):");
-			dialog.setContentText("File name:");
-
-			Optional<String> result = dialog.showAndWait();
-			result.ifPresent(filename -> {
-				if (!filename.toLowerCase().endsWith(".txt"))
-					filename += ".txt";
-				String nameOnly = filename.replace(".txt", "");
-
-				if (!nameOnly.matches("[a-zA-Z0-9]+")) {
-					showAlert(Alert.AlertType.ERROR, "Invalid filename. Only alphanumeric characters are allowed.");
-					return;
-				}
-				if (savedFileNames.contains(filename)) {
-					showAlert(Alert.AlertType.ERROR, "Filename already exists.");
-					return;
-				}
-
+			if (currentFilePath[0] == null) {
+				// First time saving - act like Save As
+				saveAsAction(textArea, notepadStage, currentFilePath, currentFileName);
+			} else {
+				// Save to existing file
 				try {
-					File tempDir = new File(System.getProperty("java.io.tmpdir"));
-					File file = new File(tempDir, filename);
-					FileWriter writer = new FileWriter(file);
+					FileWriter writer = new FileWriter(currentFilePath[0]);
 					writer.write(textArea.getText());
 					writer.close();
-					file.deleteOnExit(); // ensure file is deleted on app close
-
-					textFileCount++;
-					savedFileNames.add(filename);
-					addNotepadShortcut(filename, file.getAbsolutePath());
-					showAlert(Alert.AlertType.INFORMATION, "File temporarily saved as " + filename);
+					showAlert(Alert.AlertType.INFORMATION, "File saved successfully!");
 				} catch (IOException ex) {
 					showAlert(Alert.AlertType.ERROR, "Failed to save file: " + ex.getMessage());
 				}
-			});
+			}
 		});
 
+		// Save As menu item
+		MenuItem saveAsMenu = new MenuItem("Save As");
+		saveAsMenu.setOnAction(e -> saveAsAction(textArea, notepadStage, currentFilePath, currentFileName));
+
+		// New menu item
+		MenuItem newMenu = new MenuItem("New");
+		newMenu.setOnAction(e -> notepadWindow());
+
 		Menu fileMenu = new Menu("File");
-		fileMenu.getItems().add(saveMenu);
+		fileMenu.getItems().addAll(newMenu, saveMenu, saveAsMenu);
 
 		MenuBar menuBar = new MenuBar(fileMenu);
 		VBox layout = new VBox(menuBar, textArea);
 		VBox.setVgrow(textArea, Priority.ALWAYS);
 
 		Scene notepadScene = new Scene(layout, 900, 600);
+		notepadScene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+
+		// Add keyboard shortcuts
+		notepadScene.setOnKeyPressed(event -> {
+			if (event.isControlDown() && event.getCode() == KeyCode.S) {
+				saveMenu.fire();
+			} else if (event.isControlDown() && event.isShiftDown() && event.getCode() == KeyCode.S) {
+				saveAsMenu.fire();
+			} else if (event.isControlDown() && event.getCode() == KeyCode.N) {
+				newMenu.fire();
+			}
+		});
+
 		notepadStage.setScene(notepadScene);
 		notepadStage.show();
+	}
+
+	// Helper method for Save As functionality
+	private void saveAsAction(TextArea textArea, Stage stage, String[] currentFilePath, String[] currentFileName) {
+		String defaultName = currentFileName[0] != null ? currentFileName[0]
+				: (textFileCount == 0) ? "text.txt" : "text" + textFileCount + ".txt";
+
+		TextInputDialog dialog = new TextInputDialog(defaultName);
+		dialog.setTitle("Save File");
+		dialog.setHeaderText("Save File");
+		dialog.setContentText("File name:");
+
+		Optional<String> result = dialog.showAndWait();
+		result.ifPresent(filename -> {
+			if (!filename.toLowerCase().endsWith(".txt"))
+				filename += ".txt";
+			String nameOnly = filename.replace(".txt", "");
+
+			if (!nameOnly.matches("[a-zA-Z0-9]+")) {
+				showAlert(Alert.AlertType.ERROR, "Invalid filename. Only alphanumeric characters are allowed.");
+				return;
+			}
+			if (savedFileNames.contains(filename) && !filename.equals(currentFileName[0])) {
+				showAlert(Alert.AlertType.ERROR, "Filename already exists.");
+				return;
+			}
+
+			try {
+				File tempDir = new File(System.getProperty("java.io.tmpdir"));
+				File file = new File(tempDir, filename);
+				FileWriter writer = new FileWriter(file);
+				writer.write(textArea.getText());
+				writer.close();
+				file.deleteOnExit();
+
+				// Update current file info
+				currentFilePath[0] = file.getAbsolutePath();
+				currentFileName[0] = filename;
+				stage.setTitle("Notepad - " + currentFilePath[0]);
+
+				// Add to saved files if it's a new name
+				if (!savedFileNames.contains(filename)) {
+					textFileCount++;
+					savedFileNames.add(filename);
+					addNotepadShortcut(filename, file.getAbsolutePath());
+
+					// Check if we need to add a new column
+					if (iconBox.getChildren().size() > 10) {
+						int currentColumns = iconBox.getPrefColumns();
+						iconBox.setPrefColumns(currentColumns + 1);
+					}
+				}
+
+				showAlert(Alert.AlertType.INFORMATION, "File saved as " + filename);
+			} catch (IOException ex) {
+				showAlert(Alert.AlertType.ERROR, "Failed to save file: " + ex.getMessage());
+			}
+		});
 	}
 
 	private void addNotepadShortcut(String fileName, String filePath) {
@@ -276,15 +369,112 @@ public class Main extends Application {
 		TextArea area = new TextArea();
 		area.setWrapText(true);
 
+		// Track the current file path for saving
+		final String[] currentFilePath = { path };
+		final String[] currentFileName = { new File(path).getName() };
+
 		try {
 			area.setText(Files.readString(Paths.get(path)));
 		} catch (IOException e) {
 			showAlert(Alert.AlertType.ERROR, "Cannot open file.");
+			return;
 		}
 
-		VBox layout = new VBox(new MenuBar(), area);
+		// Save menu item (Ctrl+S)
+		MenuItem saveMenu = new MenuItem("Save");
+		saveMenu.setOnAction(e -> {
+			try {
+				FileWriter writer = new FileWriter(currentFilePath[0]);
+				writer.write(area.getText());
+				writer.close();
+				showAlert(Alert.AlertType.INFORMATION, "File saved successfully!");
+			} catch (IOException ex) {
+				showAlert(Alert.AlertType.ERROR, "Failed to save file: " + ex.getMessage());
+			}
+		});
+
+		// Save As menu item
+		MenuItem saveAsMenu = new MenuItem("Save As");
+		saveAsMenu.setOnAction(e -> {
+			String defaultName = currentFileName[0];
+			TextInputDialog dialog = new TextInputDialog(defaultName);
+			dialog.setTitle("Save As");
+			dialog.setHeaderText("Save File As");
+			dialog.setContentText("File name: ");
+
+			Optional<String> result = dialog.showAndWait();
+			result.ifPresent(filename -> {
+				if (!filename.toLowerCase().endsWith(".txt"))
+					filename += ".txt";
+				String nameOnly = filename.replace(".txt", "");
+
+				if (!nameOnly.matches("[a-zA-Z0-9]+")) {
+					showAlert(Alert.AlertType.ERROR, "Invalid filename. Only alphanumeric characters are allowed.");
+					return;
+				}
+				if (savedFileNames.contains(filename) && !filename.equals(currentFileName[0])) {
+					showAlert(Alert.AlertType.ERROR, "Filename already exists.");
+					return;
+				}
+
+				try {
+					File tempDir = new File(System.getProperty("java.io.tmpdir"));
+					File newFile = new File(tempDir, filename);
+					FileWriter writer = new FileWriter(newFile);
+					writer.write(area.getText());
+					writer.close();
+					newFile.deleteOnExit();
+
+					// Update current file info
+					currentFilePath[0] = newFile.getAbsolutePath();
+					currentFileName[0] = filename;
+					stage.setTitle("Notepad - " + currentFilePath[0]);
+
+					// Add to saved files if it's a new name
+					if (!savedFileNames.contains(filename)) {
+						savedFileNames.add(filename);
+						addNotepadShortcut(filename, newFile.getAbsolutePath());
+
+						// Check if we need to add a new column
+						if (iconBox.getChildren().size() > 10) {
+							int currentColumns = iconBox.getPrefColumns();
+							iconBox.setPrefColumns(currentColumns + 1);
+						}
+					}
+
+					showAlert(Alert.AlertType.INFORMATION, "File saved as " + filename);
+				} catch (IOException ex) {
+					showAlert(Alert.AlertType.ERROR, "Failed to save file: " + ex.getMessage());
+				}
+			});
+		});
+
+		// New menu item
+		MenuItem newMenu = new MenuItem("New");
+		newMenu.setOnAction(e -> notepadWindow());
+
+		Menu fileMenu = new Menu("File");
+		fileMenu.getItems().addAll(newMenu, saveMenu, saveAsMenu);
+
+		MenuBar menuBar = new MenuBar(fileMenu);
+		VBox layout = new VBox(menuBar, area);
 		VBox.setVgrow(area, Priority.ALWAYS);
-		stage.setScene(new Scene(layout, 800, 600));
+
+		Scene scene = new Scene(layout, 800, 600);
+		scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+		stage.setScene(scene);
+
+		// Add keyboard shortcuts
+		scene.setOnKeyPressed(event -> {
+			if (event.isControlDown() && event.getCode() == KeyCode.S) {
+				saveMenu.fire(); // Trigger save action
+			} else if (event.isControlDown() && event.isShiftDown() && event.getCode() == KeyCode.S) {
+				saveAsMenu.fire(); // Trigger save as action
+			} else if (event.isControlDown() && event.getCode() == KeyCode.N) {
+				newMenu.fire(); // Trigger new action
+			}
+		});
+
 		stage.show();
 	}
 
@@ -302,7 +492,7 @@ public class Main extends Application {
 		TextField searchBar = new TextField();
 		searchBar.setPromptText("Enter domain...");
 		searchBar.setPrefWidth(400);
-		searchBar.setStyle("-fx-border-color: deepskyblue; -fx-border-radius: 4px; -fx-focus-color: deepskyblue;");
+		searchBar.getStyleClass().add("searchbar");
 
 		Button searchBtn = new Button("Search");
 
@@ -315,24 +505,24 @@ public class Main extends Application {
 		contentPane.setPadding(new Insets(10));
 
 		// --- Empty Website Content ---
-		Label emptyContent = new Label("Empty Website");
-		emptyContent.setStyle("-fx-font-size: 18px; -fx-text-fill: gray;");
+		Label emptyContent = new Label("");
+		emptyContent.getStyleClass().add("empty-content");
 
 		// --- Domain Not Found Content (Styled like screenshot) ---
 		VBox domainNotFoundContent = new VBox(10);
 		domainNotFoundContent.setAlignment(Pos.CENTER);
 
 		Label notFoundTitle = new Label("This site can't be reached");
-		notFoundTitle.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333333;");
+		notFoundTitle.getStyleClass().add("notfound-title");
 
 		Label notFoundDesc = new Label(); // Will set text dynamically
-		notFoundDesc.setStyle("-fx-font-size: 16px; -fx-text-fill: #666666;");
+		notFoundDesc.getStyleClass().add("notfound-desc");
 
 		domainNotFoundContent.getChildren().addAll(notFoundTitle, notFoundDesc);
 
 		// --- RUtube.net Content (Styled) ---
 		VBox ruTubeContent = new VBox(20);
-		ruTubeContent.setStyle("-fx-background-color: #2b2b2b;"); // Dark background
+		ruTubeContent.getStyleClass().add("rutube-content");
 		ruTubeContent.setPadding(new Insets(20));
 		ruTubeContent.setAlignment(Pos.TOP_CENTER);
 
@@ -345,7 +535,7 @@ public class Main extends Application {
 		logo.setPreserveRatio(true);
 
 		Label logoLabel = new Label("RUtube");
-		logoLabel.setStyle("-fx-font-size: 22px; -fx-text-fill: white; -fx-font-weight: bold;");
+		logoLabel.getStyleClass().add("logo-label");
 
 		header.getChildren().addAll(logo, logoLabel);
 		header.setPadding(new Insets(10, 0, 10, 0));
@@ -381,7 +571,7 @@ public class Main extends Application {
 
 		// --- RUtify.net Content (Styled like Spotify) ---
 		VBox ruTifyContent = new VBox();
-		ruTifyContent.setStyle("-fx-background-color: black;");
+		ruTifyContent.getStyleClass().add("rutify-content");
 		ruTifyContent.setMinHeight(800);
 		ruTifyContent.setPadding(new Insets(20));
 		ruTifyContent.setAlignment(Pos.TOP_LEFT);
@@ -392,7 +582,7 @@ public class Main extends Application {
 		rutifyLogo.setFitHeight(30);
 		rutifyLogo.setPreserveRatio(true);
 		Label rutifyTitle = new Label("RUtify");
-		rutifyTitle.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;");
+		rutifyTitle.getStyleClass().add("rutify-title");
 		rutifyHeader.getChildren().addAll(rutifyLogo, rutifyTitle);
 		rutifyHeader.setAlignment(Pos.CENTER_LEFT);
 		rutifyHeader.setPadding(new Insets(10));
@@ -420,7 +610,7 @@ public class Main extends Application {
 
 		VBox rutifyPlayerBox = new VBox(10, rutifySlider, rutifyControls);
 		rutifyPlayerBox.setAlignment(Pos.CENTER);
-		rutifyPlayerBox.setPadding(new Insets(40, 0, 0, 0)); // spacing below the header
+		rutifyPlayerBox.setPadding(new Insets(150, 0, 0, 0)); // spacing below the header
 
 		// Final layout
 		ruTifyContent.getChildren().addAll(rutifyHeader, rutifyPlayerBox);
@@ -435,11 +625,11 @@ public class Main extends Application {
 		ScrollPane stockScrollPane = new ScrollPane();
 		stockScrollPane.setFitToWidth(true);
 		stockScrollPane.setPannable(true); // Enable mouse drag scrolling
-		stockScrollPane.setStyle("-fx-background: white;"); // Optional: match background
+		stockScrollPane.getStyleClass().add("stock-scroll");
 
 		VBox.setVgrow(stockScrollPane, Priority.ALWAYS);
 		VBox stockImagesBox = new VBox(20);
-		stockImagesBox.setStyle("-fx-background-color: white;");
+		stockImagesBox.getStyleClass().add("stock-images");
 		stockImagesBox.setPadding(new Insets(20));
 		stockImagesBox.setAlignment(Pos.TOP_CENTER);
 
@@ -465,11 +655,13 @@ public class Main extends Application {
 			catImage.setPreserveRatio(true);
 
 			Button downloadBtn = new Button("Download");
+			downloadBtn.getStyleClass().add("download-button"); // Use CSS class instead of inline styling
 			downloadBtn.setOnAction(e -> {
-				TextInputDialog dialog = new TextInputDialog(imageName);
-				dialog.setTitle("Download Image");
-				dialog.setHeaderText(
-						"Enter filename (alphanumeric, extension .jpg or .jpeg will be added if missing):");
+				TextInputDialog dialog = new TextInputDialog();
+				dialog.setTitle("Save Image");
+				dialog.setHeaderText("Save Image");
+				dialog.setContentText("File name:");
+				dialog.getEditor().setPromptText("Image Name");
 
 				Optional<String> result = dialog.showAndWait();
 				result.ifPresent(filename -> {
@@ -505,6 +697,13 @@ public class Main extends Application {
 							openPhotoEditor(imageName, tempFile.getAbsolutePath());
 						});
 						iconBox.getChildren().add(shortcut);
+
+						// Check if we need to add a new column
+						if (iconBox.getChildren().size() > 10) { // Adjust this threshold as needed
+							int currentColumns = iconBox.getPrefColumns();
+							iconBox.setPrefColumns(currentColumns + 1);
+						}
+
 						showAlert(Alert.AlertType.INFORMATION, "Downloaded " + filename);
 					} catch (IOException ex) {
 						showAlert(Alert.AlertType.ERROR, "Download failed: " + ex.getMessage());
@@ -561,9 +760,10 @@ public class Main extends Application {
 		// --- Main Layout matching screenshot ---
 		VBox mainLayout = new VBox(20, searchBox, contentPane);
 		mainLayout.setAlignment(Pos.TOP_CENTER);
-		mainLayout.setStyle("-fx-background-color: #f5f5f5;");
+		mainLayout.getStyleClass().add("main-layout");
 
 		Scene scene = new Scene(mainLayout, 800, 600);
+		scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
 		chromeStage.setScene(scene);
 		chromeStage.show();
 	}
@@ -605,10 +805,9 @@ public class Main extends Application {
 			scrollPane.setFitToHeight(true);
 
 			// Zoom slider from 0.5x to 3x zoom, default 1x
-			Label zoomLabel = new Label("Zoom:");
 			Slider zoomSlider = new Slider(0.5, 3.0, 1.0);
-			zoomSlider.setShowTickLabels(true);
-			zoomSlider.setShowTickMarks(true);
+			zoomSlider.setShowTickLabels(false);
+			zoomSlider.setShowTickMarks(false);
 			zoomSlider.setMajorTickUnit(0.5);
 			zoomSlider.setBlockIncrement(0.1);
 			zoomSlider.setPrefWidth(150);
@@ -619,8 +818,11 @@ public class Main extends Application {
 				imageView.setScaleY(scale);
 			});
 
-			// HBox for zoom controls
-			HBox zoomBox = new HBox(5, zoomLabel, zoomSlider);
+			// Label for zoom (now on the right)
+			Label zoomLabel = new Label("Zoom:");
+
+			// HBox for zoom controls with slider on left and label on right
+			HBox zoomBox = new HBox(5, zoomSlider, zoomLabel);
 			zoomBox.setAlignment(Pos.CENTER_LEFT);
 
 			Button rotateButton = new Button("Rotate");
@@ -640,8 +842,8 @@ public class Main extends Application {
 			root.setCenter(scrollPane);
 
 			Scene scene = new Scene(root, 600, 500);
+			scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
 			setScene(scene);
 		}
 	}
-
 }
